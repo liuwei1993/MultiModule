@@ -1,0 +1,41 @@
+// update module aar .
+gradle.taskGraph.whenReady {
+    tasks.findAll {task->task.name.contains("assembleDebug")}.each {
+        it.dependsOn{
+            tasks.updateAAR.execute()
+        }
+    }
+}
+
+task updateAAR << {
+    eachLibsAAR()
+}
+
+def eachModuleAAR(libsModuleAAR){
+    def libPath= getRootProject().projectDir.getAbsolutePath()+"/app/libs/";
+    for (Project project : getRootProject().getAllprojects()) {
+        def projectModuleAARPath=project.buildDir.absolutePath+"/outputs/aar/";
+        def dir = new File(projectModuleAARPath)
+        if (!dir.exists()) continue
+
+        dir.eachFile { File file ->
+            if (libsModuleAAR.name.contains(file.name)) {
+                copy{
+                    from file.absolutePath
+                    into libPath
+                }
+                println '\n' + libsModuleAAR.name + ' Update SUCCESS!'
+            }
+        }
+    }
+}
+
+def eachLibsAAR(){
+    def libPath= getRootProject().projectDir.getAbsolutePath()+"/app/libs/";
+    def libDir = new File(libPath)
+    if (libDir.exists()){
+        libDir.eachFile {
+            eachModuleAAR(it)
+        }
+    }
+}

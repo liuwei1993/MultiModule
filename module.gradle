@@ -1,0 +1,37 @@
+def initModuleCompile() {
+    Properties properties = new Properties();
+    File file = new File(rootDir.getAbsolutePath() + "/module.properties")
+    properties.load(file.newDataInputStream())
+    Iterator itr = properties.entrySet().iterator();
+    while (itr.hasNext()) {
+        Map.Entry e = (Map.Entry) itr.next();
+        String key = e.getKey();
+        rootProject.ext.setProperty(key, e.getValue());
+    }
+}
+
+initModuleCompile()
+
+ext {
+    compile_moduleone = this.&compile_moduleone
+    compile_moduletwo = this.&compile_moduletwo
+}
+
+def compile_moduleone(Project projectModule){
+    projectModule.dependencies{
+        if (isAllDebug.toBoolean() || isModuleOneDebug.toBoolean()) {
+            compile project(':moduleone')
+        } else {
+            compile(name: 'moduleone-release', ext: 'aar')
+        }
+    }
+}
+def compile_moduletwo(Project projectModule){
+    projectModule.dependencies{
+        if (isAllDebug.toBoolean() || isModuleTwoDebug.toBoolean()) {
+            compile project(':moduletwo')
+        } else {
+            compile(name: 'moduletwo-release', ext: 'aar')
+        }
+    }
+}
